@@ -1,0 +1,9 @@
+[package]
+name = "femto"
+version = "0.0.1"
+authors = ["Dariusz Depta <dariusz.depta@engos.software>"]
+description = "femto"
+documentation = "https://docs.rs/femto"
+repository = "https://github.com/EngosSoftware/femto.git"
+license = "MIT"
+edition = "2021"
