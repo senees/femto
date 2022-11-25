@@ -1,9 +1,9 @@
 [package]
 name = "femto"
-version = "0.0.1"
-authors = ["Dariusz Depta <dariusz.depta@engos.software>"]
+version = "0.0.2"
+authors = ["senees <code@senees.de>"]
 description = "femto"
 documentation = "https://docs.rs/femto"
-repository = "https://github.com/EngosSoftware/femto.git"
+repository = "https://github.com/senees/femto.git"
 license = "MIT"
 edition = "2021"
