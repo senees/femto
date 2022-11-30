@@ -1,8 +1,8 @@
 # Summary
 
-| Total  | Implemented  |   %    |
-|:------:|:------------:|:------:|
-|  772   |      4       | `0,52` |
+| Total  | Implemented |   %    |
+|:------:|:-----------:|:------:|
+|  772   |      5      | `0.64` |
 
 ## Implemented
 
@@ -10,6 +10,7 @@
 - __bid128_from_int64
 - __bid128_from_uint32
 - __bid128_from_uint64
+- __bid128_to_string
 
 ## Not implemented yet
 
@@ -496,7 +497,6 @@
 - __bid_testSavedFlags
 - __bid32_to_bid64
 - __bid64_to_bid32
-- __bid128_to_string
 - __bid_mod10_18_tbl
 - __bid128_to_bid32
 - __bid32_to_bid128
