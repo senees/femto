@@ -3,9 +3,13 @@
 use std::fmt;
 
 mod bid128_from_int;
+mod bid128_from_string;
+mod bid128_scalb;
 mod bid128_to_string;
 mod bid128_to_string_macros;
 mod bid128_to_string_tables;
+mod bid_decimal_data;
+mod bid_internal;
 
 /// 128-bit decimal number.
 #[derive(Default, Copy, Clone)]

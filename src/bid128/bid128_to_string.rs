@@ -27,9 +27,9 @@ impl ToString for BID128 {
         let _ = write!(&mut str, "+");
       }
       let _ = write!(&mut str, "0E");
-      let mut exp = (((self.w[1] & 0x7FFE000000000000_u64) >> 49) - 6176) as i32;
+      let mut exp = (((self.w[1] & 0x7FFE000000000000_u64) >> 49) as i32) - 6176;
       if exp > (((0x5ffe) >> 1) - (6176)) {
-        exp = ((((self.w[1] << 2) & 0x7FFE000000000000_u64) >> 49) - 6176) as i32;
+        exp = ((((self.w[1] << 2) & 0x7FFE000000000000_u64) >> 49) as i32) - 6176;
       }
       if exp >= 0 {
         let _ = write!(&mut str, "+{}", exp);
@@ -47,7 +47,7 @@ impl ToString for BID128 {
       let c1 = BID128 {
         w: [self.w[0], self.w[1] & 0x0001FFFFFFFFFFFF_u64],
       };
-      let mut exp = ((x_exp >> 49) - 6176) as i32;
+      let mut exp = ((x_exp >> 49) as i32) - 6176;
       if x_sign != 0 {
         let _ = write!(&mut str, "-");
       } else {
