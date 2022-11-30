@@ -2,7 +2,7 @@ use femto::BID128;
 
 #[inline(always)]
 fn eq(expected: &str, actual: BID128) {
-  assert_eq!(expected, format!("{:?}", actual))
+  assert_eq!(expected, format!("{:?}", actual));
 }
 
 #[test]

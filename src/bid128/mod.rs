@@ -2,7 +2,10 @@
 
 use std::fmt;
 
-mod from_int;
+mod bid128_from_int;
+mod bid128_to_string;
+mod bid128_to_string_macros;
+mod bid128_to_string_tables;
 
 /// 128-bit decimal number.
 #[derive(Default, Copy, Clone)]
