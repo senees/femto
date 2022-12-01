@@ -12,43 +12,49 @@ fn eq(b: &str, n: i32, result: &str, status: ExceptionStatusFlag, _ulp: Option<f
   let w1 = u64::from_str_radix(&sw1, 16).unwrap();
   let w0 = u64::from_str_radix(&sw0, 16).unwrap();
   let value = __bid128!(w0, w1);
-  println!("{}", value.to_string());
   let actual = value.scalbn(n);
-  println!("{}", actual.to_string());
   assert_eq!(result, format!("[{:016x}{:016x}]", actual.w[1], actual.w[0]));
   assert_eq!(status, actual.flags);
 }
 
-#[test]
-fn _0001() {
-  eq("[0000000000000000,0000000000000000]", 0, "[00000000000000000000000000000000]", 0x00, None);
+macro_rules! t {
+  ($no:tt, $bid:literal, $n:expr, $result:literal, $status:expr) => {
+    #[test]
+    fn $no() {
+      eq($bid, $n, $result, $status, None);
+    }
+  };
+  ($no:tt, $bid:literal, $n:expr, $result:literal, $status:expr, $ulp:expr) => {
+    #[test]
+    fn $no() {
+      eq($bid, $n, $result, $status, Some($ulp));
+    }
+  };
 }
 
-#[test]
-fn _0002() {
-  eq("[0000000000000000,0000000000000000]", -1, "[00000000000000000000000000000000]", 0x00, None);
+macro_rules! i {
+  ($no:tt, $bid:literal, $n:expr, $result:literal, $status:expr) => {
+    #[test]
+    #[ignore]
+    fn $no() {
+      eq($bid, $n, $result, $status, None);
+    }
+  };
+  ($no:tt, $bid:literal, $n:expr, $result:literal, $status:expr, $ulp:expr) => {
+    #[test]
+    #[ignore]
+    fn $no() {
+      eq($bid, $n, $result, $status, Some($ulp));
+    }
+  };
 }
 
-#[test]
-fn _0003() {
-  eq("[0000000000000000,0000000000000000]", 1, "[00020000000000000000000000000000]", 0x00, None);
-}
-
-#[test]
-fn _0004() {
-  eq("[0000000000000000,0000000000000000]", 12336256, "[5ffe0000000000000000000000000000]", 0x00, None);
-}
-
-#[test]
-fn _0005() {
-  eq("[0000000000000000,0000000000000001]", 0, "[00000000000000000000000000000001]", 0x00, Some(0.0));
-}
-
-#[test]
-#[ignore]
-fn _0006() {
-  eq("[0000000000000000,0000000000000001]", -1, "[00000000000000000000000000000000]", 0x30, Some(0.1));
-}
+t!(_0001, "[00000000000000000000000000000000]", 0, "[00000000000000000000000000000000]", 0x00);
+t!(_0002, "[00000000000000000000000000000000]", -1, "[00000000000000000000000000000000]", 0x00);
+t!(_0003, "[0000000000000000,0000000000000000]", 1, "[00020000000000000000000000000000]", 0x00);
+t!(_0004, "[0000000000000000,0000000000000000]", 12336256, "[5ffe0000000000000000000000000000]", 0x00);
+t!(_0005, "[0000000000000000,0000000000000001]", 0, "[00000000000000000000000000000001]", 0x00, 0.0);
+i!(_0006, "[0000000000000000,0000000000000001]", -1, "[00000000000000000000000000000000]", 0x30, 0.1);
 
 #[test]
 #[ignore]
