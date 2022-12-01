@@ -22,6 +22,11 @@ tasks:
     cmds:
       - cmd: cargo clean
 
+  cov:
+    desc: Runs code coverage using grcov
+    cmds:
+      - cmd: ./coverage.sh
+
   doc:
     desc: Generates the documentation
     cmds:
