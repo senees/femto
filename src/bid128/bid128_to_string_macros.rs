@@ -1,6 +1,6 @@
 //!
 
-macro_rules! l0_normalize_10to18 {
+macro_rules! __l0_normalize_10to18 {
   ($x_hi:expr, $x_lo:expr) => {{
     let l0_tmp = $x_lo + BID_TWOTO60_M_10TO18;
     if l0_tmp & BID_TWOTO60 > 0 {
@@ -10,7 +10,9 @@ macro_rules! l0_normalize_10to18 {
   }};
 }
 
-macro_rules! l0_split_midi_2 {
+pub(crate) use __l0_normalize_10to18;
+
+macro_rules! __l0_split_midi_2 {
   ($x:expr, $ptr:expr, $midi:expr) => {{
     let mut l0_head = $x >> 10;
     let mut l0_tail = ($x & 0x03FF) + (l0_head << 5) - (l0_head << 3);
@@ -28,7 +30,9 @@ macro_rules! l0_split_midi_2 {
   }};
 }
 
-macro_rules! l0_split_midi_3 {
+pub(crate) use __l0_split_midi_2;
+
+macro_rules! __l0_split_midi_3 {
   ($x:expr, $ptr:expr, $midi:expr) => {{
     let mut l0_x = $x as u32;
     let mut l0_head = ((l0_x >> 17) * 34359) >> 18;
@@ -55,7 +59,9 @@ macro_rules! l0_split_midi_3 {
   }};
 }
 
-macro_rules! l1_split_midi_6 {
+pub(crate) use __l0_split_midi_3;
+
+macro_rules! __l1_split_midi_6 {
   ($x:expr, $ptr:expr, $midi:expr) => {{
     let mut l1_xhi_64 = (($x >> 28) * BID_INV_TENTO9) >> 33;
     let mut l1_xlo_64 = $x - l1_xhi_64 * (BID_TENTO9 as u64);
@@ -65,12 +71,14 @@ macro_rules! l1_split_midi_6 {
     }
     let l1_x_hi = l1_xhi_64 as u32;
     let l1_x_lo = l1_xlo_64 as u32;
-    l0_split_midi_3!(l1_x_hi, $ptr, $midi);
-    l0_split_midi_3!(l1_x_lo, $ptr, $midi);
+    __l0_split_midi_3!(l1_x_hi, $ptr, $midi);
+    __l0_split_midi_3!(l1_x_lo, $ptr, $midi);
   }};
 }
 
-macro_rules! l1_split_midi_6_lead {
+pub(crate) use __l1_split_midi_6;
+
+macro_rules! __l1_split_midi_6_lead {
   ($x:expr, $ptr:expr, $midi:expr) => {{
     if $x >= (BID_TENTO9 as u64) {
       let mut l1_xhi_64 = (($x >> 28) * BID_INV_TENTO9) >> 33;
@@ -82,22 +90,22 @@ macro_rules! l1_split_midi_6_lead {
       let l1_x_hi = l1_xhi_64 as u32;
       let l1_x_lo = l1_xlo_64 as u32;
       if l1_x_hi >= BID_TENTO6 {
-        l0_split_midi_3!(l1_x_hi, $ptr, $midi);
-        l0_split_midi_3!(l1_x_lo, $ptr, $midi);
+        __l0_split_midi_3!(l1_x_hi, $ptr, $midi);
+        __l0_split_midi_3!(l1_x_lo, $ptr, $midi);
       } else if l1_x_hi >= BID_TENTO3 {
-        l0_split_midi_2!(l1_x_hi, $ptr, $midi);
-        l0_split_midi_3!(l1_x_lo, $ptr, $midi);
+        __l0_split_midi_2!(l1_x_hi, $ptr, $midi);
+        __l0_split_midi_3!(l1_x_lo, $ptr, $midi);
       } else {
         $midi[$ptr] = l1_x_hi;
         $ptr += 1;
-        l0_split_midi_3!(l1_x_lo, $ptr, $midi);
+        __l0_split_midi_3!(l1_x_lo, $ptr, $midi);
       }
     } else {
       let l1_x_lo = $x as u32;
       if l1_x_lo >= BID_TENTO6 {
-        l0_split_midi_3!(l1_x_lo, $ptr, $midi);
+        __l0_split_midi_3!(l1_x_lo, $ptr, $midi);
       } else if l1_x_lo >= BID_TENTO3 {
-        l0_split_midi_2!(l1_x_lo, $ptr, $midi);
+        __l0_split_midi_2!(l1_x_lo, $ptr, $midi);
       } else {
         $midi[$ptr] = l1_x_lo;
         $ptr += 1;
@@ -106,14 +114,18 @@ macro_rules! l1_split_midi_6_lead {
   }};
 }
 
-macro_rules! l0_midi2str {
+pub(crate) use __l1_split_midi_6_lead;
+
+macro_rules! __l0_midi2str {
   ($x:expr, $str:expr) => {{
     let l0_src = BID_MIDI_TBL[$x as usize];
     let _ = write!(&mut $str, "{}", l0_src);
   }};
 }
 
-macro_rules! l0_midi2str_lead {
+pub(crate) use __l0_midi2str;
+
+macro_rules! __l0_midi2str_lead {
   ($x:expr, $str:expr) => {{
     let l0_src = BID_MIDI_TBL[$x as usize];
     if $x >= 100 {
@@ -126,11 +138,13 @@ macro_rules! l0_midi2str_lead {
   }};
 }
 
+pub(crate) use __l0_midi2str_lead;
+
 /// Convenient macro for converting ASCII codes to [char] type.
-macro_rules! ascii_to_char {
+macro_rules! __ascii_to_char {
   ($x:expr) => {{
     ($x as u8) as char
   }};
 }
 
-pub(crate) use {ascii_to_char, l0_midi2str, l0_midi2str_lead, l0_normalize_10to18, l0_split_midi_2, l0_split_midi_3, l1_split_midi_6, l1_split_midi_6_lead};
+pub(crate) use __ascii_to_char;

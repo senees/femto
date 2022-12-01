@@ -46,6 +46,7 @@ impl ToString for BID128 {
       }
       let c1 = BID128 {
         w: [self.w[0], self.w[1] & 0x0001FFFFFFFFFFFF_u64],
+        ..Default::default()
       };
       let mut exp = ((x_exp >> 49) as i32) - 6176;
       if x_sign != 0 {
@@ -73,21 +74,21 @@ impl ToString for BID128 {
           midi_ind += 1;
           lo_18dig += BID_MOD10_18_TBL[k_lcv][midi_ind];
           k_lcv += 1;
-          l0_normalize_10to18!(hi_18dig, lo_18dig);
+          __l0_normalize_10to18!(hi_18dig, lo_18dig);
         }
         let mut ptr = 0_usize;
         let mut midi: [u32; 12] = [0; 12];
         if hi_18dig == 0 {
-          l1_split_midi_6_lead!(lo_18dig, ptr, midi);
+          __l1_split_midi_6_lead!(lo_18dig, ptr, midi);
         } else {
-          l1_split_midi_6_lead!(hi_18dig, ptr, midi);
-          l1_split_midi_6!(lo_18dig, ptr, midi);
+          __l1_split_midi_6_lead!(hi_18dig, ptr, midi);
+          __l1_split_midi_6!(lo_18dig, ptr, midi);
         }
         // convert the `midi` into character strings
-        l0_midi2str_lead!(midi[0], str);
+        __l0_midi2str_lead!(midi[0], str);
         k_lcv = 1;
         while k_lcv < ptr {
-          l0_midi2str!(midi[k_lcv], str);
+          __l0_midi2str!(midi[k_lcv], str);
           k_lcv += 1;
         }
       }
@@ -105,7 +106,7 @@ impl ToString for BID128 {
       let d123 = exp - 1000 * d0;
       if d0 > 0 {
         // 1000 <= exp <= 6144 => 4 digits to return
-        let _ = write!(&mut str, "{}", ascii_to_char!(d0 + 0x30)); // ASCII for decimal digit d0
+        let _ = write!(&mut str, "{}", __ascii_to_char!(d0 + 0x30)); // ASCII for decimal digit d0
         let ind = (3 * d123) as usize;
         let _ = write!(&mut str, "{}", BID_CHAR_TABLE3[ind]);
         let _ = write!(&mut str, "{}", BID_CHAR_TABLE3[ind + 1]);
@@ -114,7 +115,7 @@ impl ToString for BID128 {
         // 0 <= exp <= 999 => d0 = 0
         if d123 < 10 {
           // 0 <= exp <= 9 => 1 digit to return
-          let _ = write!(&mut str, "{}", ascii_to_char!(d123 + 0x30)); // ASCII
+          let _ = write!(&mut str, "{}", __ascii_to_char!(d123 + 0x30)); // ASCII
         } else if d123 < 100 {
           // 10 <= exp <= 99 => 2 digits to return
           let ind = (2 * (d123 - 10)) as usize;

@@ -6,13 +6,33 @@ pub const INFINITY_MASK64: u64 = 0x7800000000000000;
 pub const SINFINITY_MASK64: u64 = 0xF800000000000000;
 pub const EXPONENT_MASK128: i32 = 0x3FFF;
 pub const NAN_MASK64: u64 = 0x7c00000000000000;
+pub const SNAN_MASK64: u64 = 0x7e00000000000000;
+pub const QUIET_MASK64: u64 = 0xfdffffffffffffff;
 pub const SMALL_COEFF_MASK128: u64 = 0x0001FFFFFFFFFFFF;
 
+///
 macro_rules! unsigned_compare_ge_128 {
   ($a:expr, $b:expr) => {{
     (($a.w[1] > $b.w[1]) || (($a.w[1] == $b.w[1]) && ($a.w[0] >= $b.w[0])))
   }};
 }
+
+/// Add 128-bit value to 128-bit value, assume no carry-out.
+macro_rules! __add_128_128 {
+  ($r128:expr, $a128:expr, $b128:expr) => {{
+    let mut q128 = BID128 {
+      w: [$b128.w[0] + $a128.w[0], $a128.w[1] + $b128.w[1]],
+      flags: 0,
+    };
+    if q128.w[0] < $b128.w[0] {
+      q128.w[1] += 1;
+    }
+    $r128.w[0] = q128.w[0];
+    $r128.w[1] = q128.w[1];
+  }};
+}
+
+pub(crate) use __add_128_128;
 
 #[inline(always)]
 pub fn unpack_bid128_value(sign: &mut u64, exponent: &mut i32, coefficient: &mut BID128, x: &BID128) -> bool {
@@ -47,6 +67,7 @@ pub fn unpack_bid128_value(sign: &mut u64, exponent: &mut i32, coefficient: &mut
   }
   let mut coeff = BID128 {
     w: [x.w[0], x.w[1] & SMALL_COEFF_MASK128],
+    ..Default::default()
   };
   // 10^34
   let t34 = BID_POWER10_TABLE_128[34];
