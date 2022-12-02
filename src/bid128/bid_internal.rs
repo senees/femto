@@ -1,3 +1,4 @@
+use crate::bid128::__bid128;
 use crate::bid128::bid_decimal_data::*;
 use crate::BID128;
 
@@ -20,10 +21,7 @@ macro_rules! unsigned_compare_ge_128 {
 /// Add 128-bit value to 128-bit value, assume no carry-out.
 macro_rules! __add_128_128 {
   ($r128:expr, $a128:expr, $b128:expr) => {{
-    let mut q128 = BID128 {
-      w: [$b128.w[0] + $a128.w[0], $a128.w[1] + $b128.w[1]],
-      flags: 0,
-    };
+    let mut q128 = __bid128!($b128.w[0] + $a128.w[0], $a128.w[1] + $b128.w[1]);
     if q128.w[0] < $b128.w[0] {
       q128.w[1] += 1;
     }
@@ -65,10 +63,7 @@ pub fn unpack_bid128_value(sign: &mut u64, exponent: &mut i32, coefficient: &mut
     *exponent = 0;
     return false; // NaN or Infinity
   }
-  let mut coeff = BID128 {
-    w: [x.w[0], x.w[1] & SMALL_COEFF_MASK128],
-    ..Default::default()
-  };
+  let mut coeff = __bid128!(x.w[0], x.w[1] & SMALL_COEFF_MASK128);
   // 10^34
   let t34 = BID_POWER10_TABLE_128[34];
   // check for non-canonical values

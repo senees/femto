@@ -1,5 +1,6 @@
 use crate::BID128;
 
+use crate::bid128::__bid128;
 use crate::bid128::bid128_to_string_macros::*;
 use crate::bid128::bid128_to_string_tables::*;
 use std::fmt::Write;
@@ -44,10 +45,7 @@ impl ToString for BID128 {
       if (self.w[1] & 0x6000000000000000_u64) == 0x6000000000000000_u64 {
         x_exp = (self.w[1] << 2) & 0x7FFE000000000000_u64;
       }
-      let c1 = BID128 {
-        w: [self.w[0], self.w[1] & 0x0001FFFFFFFFFFFF_u64],
-        ..Default::default()
-      };
+      let c1 = __bid128!(self.w[0], self.w[1] & 0x0001FFFFFFFFFFFF_u64);
       let mut exp = ((x_exp >> 49) as i32) - 6176;
       if x_sign != 0 {
         let _ = write!(&mut str, "-");

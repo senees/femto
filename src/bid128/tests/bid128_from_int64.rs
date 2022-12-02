@@ -1,10 +1,10 @@
 //! bid128_from_int64
 
-use crate::bid128::bid_functions::ExceptionStatusFlag;
+use crate::bid128::bid_functions::Flags;
 use crate::BID128;
 
 #[inline(always)]
-fn eq(n: i64, result: &str, status: ExceptionStatusFlag) {
+fn eq(n: i64, result: &str, status: Flags) {
   let actual = BID128::from(n);
   assert_eq!(result, format!("[{:016x}{:016x}]", actual.w[1], actual.w[0]));
   assert_eq!(status, actual.flags);

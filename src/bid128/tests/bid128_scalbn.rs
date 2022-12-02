@@ -1,11 +1,11 @@
 //! bid128_scalbln
 
 use crate::bid128::__bid128;
-use crate::bid128::bid_functions::ExceptionStatusFlag;
+use crate::bid128::bid_functions::Flags;
 use crate::BID128;
 
 #[inline(always)]
-fn eq(b: &str, n: i32, result: &str, status: ExceptionStatusFlag, _ulp: Option<f64>) {
+fn eq(b: &str, n: i32, result: &str, status: Flags, _ulp: Option<f64>) {
   let s = b.replace(",", "");
   let sw1 = format!("{}", &s[1..17]);
   let sw0 = format!("{}", &s[17..33]);
@@ -69,7 +69,6 @@ fn _0008() {
 }
 
 #[test]
-#[ignore]
 fn _0009() {
   eq("[000000028a080400,8002020024000000]", -9, "[000000000000000ae7dcfc24a9355432]", 0x30, None);
 }
