@@ -241,12 +241,7 @@ pub fn bid_get_bid128_very_fast(res: &mut BID128, sign: u64, exponent: i32, coef
 }
 
 pub fn handle_uf_128(pres: &mut BID128, sgn: u64, expon: i32, mut cq: BID128, prounding_mode: Rounding) -> &BID128 {
-  // BID_UINT128 T128, TP128, Qh, Ql, Qh1, Stemp, Tmp, Tmp1;
-  // BID_UINT64 carry, CY;
-  // int ed2, amount;
-  // unsigned rmode, status;
-
-  // UF occurs
+  // underflow occurs
   if (expon + MAX_FORMAT_DIGITS_128 as i32) < 0 {
     pres.w[1] = sgn;
     pres.w[0] = 0;
