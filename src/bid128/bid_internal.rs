@@ -65,10 +65,17 @@ macro_rules! __shl_128_long {
  *                                                                             *
  *******************************************************************************/
 
-///
+/// Greater than, return 0 if a <= b, non-zero if a > b.
+macro_rules! __unsigned_compare_gt_128 {
+  ($a:expr, $b:expr) => {{
+    ($a.w[1] > $b.w[1]) || (($a.w[1] == $b.w[1]) && ($a.w[0] > $b.w[0]))
+  }};
+}
+
+/// Greater or equal, return 0 if a < b, non-zero if a >= b.
 macro_rules! __unsigned_compare_ge_128 {
   ($a:expr, $b:expr) => {{
-    (($a.w[1] > $b.w[1]) || (($a.w[1] == $b.w[1]) && ($a.w[0] >= $b.w[0])))
+    ($a.w[1] > $b.w[1]) || (($a.w[1] == $b.w[1]) && ($a.w[0] >= $b.w[0]))
   }};
 }
 
@@ -150,7 +157,8 @@ macro_rules! __mul_128x128_full {
 macro_rules! __add_carry_out {
   ($s:expr, $cy:expr, $x:expr, $y:expr) => {{
     let x1: u64 = $x;
-    $s = $x + $y;
+    $s += $x;
+    $s += $y;
     $cy = if ($s < x1) { 1 } else { 0 };
   }};
 }
@@ -246,7 +254,7 @@ pub fn handle_uf_128(pres: &mut BID128, sgn: u64, expon: i32, mut cq: BID128, pr
     pres.w[1] = sgn;
     pres.w[0] = 0;
     pres.flags |= BID_UNDERFLOW_EXCEPTION | BID_INEXACT_EXCEPTION;
-    if (sgn > 0 && prounding_mode == BID_ROUNDING_DOWN) || (sgn > 0 && prounding_mode == BID_ROUNDING_UP) {
+    if (sgn != 0 && prounding_mode == BID_ROUNDING_DOWN) || (sgn == 0 && prounding_mode == BID_ROUNDING_UP) {
       pres.w[0] = 1u64;
     }
     return pres;
@@ -254,7 +262,7 @@ pub fn handle_uf_128(pres: &mut BID128, sgn: u64, expon: i32, mut cq: BID128, pr
   let ed2 = (0 - expon) as usize;
   // add rounding constant to `cq`
   let mut rmode = prounding_mode;
-  if sgn > 0 && ((rmode - 1) as u32) < 2 {
+  if sgn > 0 && (rmode - 1) < 2 {
     rmode = 3 - rmode
   };
 
@@ -274,18 +282,13 @@ pub fn handle_uf_128(pres: &mut BID128, sgn: u64, expon: i32, mut cq: BID128, pr
     __shr_128!(cq, qh, amount);
   }
 
-  if prounding_mode > 0 {
-    if cq.w[0] & 1 > 0 {
-      // check whether fractional part of initial_P/10^ed1 is exactly .5
+  if prounding_mode > 0 && cq.w[0] & 1 > 0 {
+    // check whether fractional part of initial_P/10^ed1 is exactly .5, get remainder
+    let mut qh1 = __bid128!();
+    __shl_128_long!(qh1, qh, (128 - amount));
 
-      // get remainder
-      let mut qh1 = __bid128!();
-      __shl_128_long!(qh1, qh, (128 - amount));
-
-      if qh1.w[1] == 0 && qh1.w[0] == 0 && (ql.w[1] < BID_RECIPROCALS10_128[ed2].w[1] || (ql.w[1] == BID_RECIPROCALS10_128[ed2].w[1] && ql.w[0] < BID_RECIPROCALS10_128[ed2].w[0]))
-      {
-        cq.w[0] -= 1;
-      }
+    if qh1.w[1] == 0 && qh1.w[0] == 0 && (ql.w[1] < BID_RECIPROCALS10_128[ed2].w[1] || (ql.w[1] == BID_RECIPROCALS10_128[ed2].w[1] && ql.w[0] < BID_RECIPROCALS10_128[ed2].w[0])) {
+      cq.w[0] -= 1;
     }
   }
 
@@ -356,20 +359,20 @@ pub fn bid_get_bid128(pres: &mut BID128, sgn: u64, mut expon: i32, mut coeff: BI
       return handle_uf_128(pres, sgn, expon, coeff, prounding_mode);
     }
   }
-
+  if expon - MAX_FORMAT_DIGITS_128 as i32 <= DECIMAL_MAX_EXPON_128 as i32 {
+    let t = BID_POWER10_TABLE_128[(MAX_FORMAT_DIGITS_128 - 1) as usize];
+    while __unsigned_compare_gt_128!(t, coeff) && expon > DECIMAL_MAX_EXPON_128 as i32 {
+      coeff.w[1] = (coeff.w[1] << 3) + (coeff.w[1] << 1) + (coeff.w[0] >> 61) + (coeff.w[0] >> 63);
+      let tmp2 = coeff.w[0] << 3;
+      coeff.w[0] = (coeff.w[0] << 1) + tmp2;
+      if coeff.w[0] < tmp2 {
+        coeff.w[1] += 1;
+      }
+      expon -= 1;
+    }
+  }
   /*
 
-
-    if (expon - MAX_FORMAT_DIGITS_128 <= DECIMAL_MAX_EXPON_128) {
-      T = bid_power10_table_128[MAX_FORMAT_DIGITS_128 - 1];
-      while (__unsigned_compare_gt_128 (T, coeff) && expon > DECIMAL_MAX_EXPON_128) {
-        coeff.w[1] = (coeff.w[1] << 3) + (coeff.w[1] << 1) + (coeff.w[0] >> 61) + (coeff.w[0] >> 63);
-        tmp2 = coeff.w[0] << 3;
-        coeff.w[0] = (coeff.w[0] << 1) + tmp2;
-        if (coeff.w[0] < tmp2) coeff.w[1]++;
-        expon--;
-      }
-    }
     if (expon > DECIMAL_MAX_EXPON_128) {
       if (!(coeff.w[1] | coeff.w[0])) {
         pres->w[1] = sgn | (((BID_UINT64) DECIMAL_MAX_EXPON_128) << 49);
@@ -395,13 +398,13 @@ pub fn bid_get_bid128(pres: &mut BID128, sgn: u64, mut expon: i32, mut coeff: BI
       return pres;
     }
   }
-  pres->w[0] = coeff.w[0];
-  tmp = expon;
-  tmp <<= 49;
-  pres->w[1] = sgn | tmp | coeff.w[1];
 
-     */
-  //
+
+  */
+  pres.w[0] = coeff.w[0];
+  let mut tmp = expon as u64;
+  tmp <<= 49;
+  pres.w[1] = sgn | tmp | coeff.w[1];
   pres
 }
 
