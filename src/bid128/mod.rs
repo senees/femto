@@ -5,7 +5,8 @@ use std::fmt;
 
 mod bid128_from_int;
 mod bid128_from_string;
-mod bid128_functions;
+pub mod bid128_functions;
+mod bid128_quantize;
 mod bid128_scalb;
 mod bid128_to_string;
 mod bid128_to_string_macros;
