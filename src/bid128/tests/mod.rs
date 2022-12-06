@@ -6,6 +6,7 @@ use crate::BID128;
 mod bid128_from_int32;
 mod bid128_from_int64;
 mod bid128_scalbn;
+mod tests_bid128_from_string;
 mod tests_bid128_quantize;
 
 #[cfg(target_endian = "big")]

@@ -3,6 +3,7 @@ use crate::bid128::bid_decimal_data::*;
 use crate::bid128::bid_functions::*;
 use crate::BID128;
 
+pub const SIGN_MASK64: u64 = 0x8000000000000000;
 pub const SPECIAL_ENCODING_MASK64: u64 = 0x6000000000000000;
 pub const INFINITY_MASK64: u64 = 0x7800000000000000;
 pub const SINFINITY_MASK64: u64 = 0xF800000000000000;
@@ -345,14 +346,14 @@ pub fn handle_uf_128(pres: &mut BID128, sgn: u64, expon: i32, mut cq: BID128, pr
 }
 
 pub fn bid_get_bid128(pres: &mut BID128, sgn: u64, mut expon: i32, mut coeff: BID128, prounding_mode: Rounding) -> &BID128 {
-  // coeff==10^34?
+  // is coeff == 10^34 ?...
   if coeff.w[1] == 0x0001ed09bead87c0u64 && coeff.w[0] == 0x378d8e6400000000u64 {
+    // ...then set coefficient to 10^33 and increase exponent
     expon += 1;
-    // set coefficient to 10^33
     coeff.w[1] = 0x0000314dc6448d93u64;
     coeff.w[0] = 0x38c15b0a00000000u64;
   }
-  // check overflow, underflow
+  // check overflow / underflow
   if expon < 0 || expon > DECIMAL_MAX_EXPON_128 as i32 {
     // check underflow
     if expon < 0 {
@@ -402,9 +403,7 @@ pub fn bid_get_bid128(pres: &mut BID128, sgn: u64, mut expon: i32, mut coeff: BI
 
   */
   pres.w[0] = coeff.w[0];
-  let mut tmp = expon as u64;
-  tmp <<= 49;
-  pres.w[1] = sgn | tmp | coeff.w[1];
+  pres.w[1] = coeff.w[1] | sgn | (expon as u64) << 49;
   pres
 }
 
